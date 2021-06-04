@@ -7,7 +7,7 @@ if __name__ == "__main__":
     data = pd.read_csv("/Users/stephen/Desktop/Momentum Trading Project/ticker-names-on-NASDAQ-NYSE.csv")
     data = data[data["Volume"] > 1000000][data["IPO Year"] < 2010][data["Symbol"] != "AMHC"]["Symbol"]
 
-    period = "10"
+    period = "1215"
     df = None
     for name in data:
         col = yf.Ticker(name).history(period=period+"d").loc[: , ["Close"]]
