@@ -1,1 +1,1 @@
-# cross-sectional-momentum-trading
+#momentum-trading
