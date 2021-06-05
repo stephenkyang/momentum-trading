@@ -36,13 +36,22 @@ data = data.fillna(method='ffill')
 # Stock goes below 5% of the initial buying price (Loss)
 # Stock goes above 1 SD above the bolinger band? (Gain)
 # Initial assumptions are wrong (MACD's trigger line is crossed, RSI reverses trend, etc)
-
-
-def finding_qualifying_equities():
-    
-
+tradable_stocks = []
+print(data["AAPL"].iloc[0:14].mean())
+#print(data["AAPL"][50])
+#the Richard Dreihaus strategy
+def finding_qualifying_equities(data):
+    # Divide the numerator (month end price of a stock - 50-day moving average price) by the 50-day moving average of the month end price.
+    # A second filter was applied where the positive relative strength which is nothing but stocks having a 50% or more positive relative strength were chosen.
+    data.reset_index(drop=True, inplace=True)
+    for ticker in data:
+        if ticker == "Date":
+            continue
+        if data[ticker][1] > data[ticker].iloc[2:50].mean():
+            tradable_stocks.append(ticker) 
     return
-
+finding_qualifying_equities(data) 
+print(tradable_stocks)   
 def bollinger_bands(pair,days = 200):
     combined_z_scores = (data[pair[0]].iloc[-days:-1] + data[pair[1]].iloc[-days:-1]) / 2
     upper_bolli_band = combined_z_scores + combined_z_scores.std() * 2
@@ -69,7 +78,7 @@ def MACD_plot(ticker, macd, exp3):
     ax.legend(lines, [l.get_label() for l in lines], loc='upper left')
     plt.show()
 
-MACD_signal_line(data, "AAPL")
+
 
 def rsiFunc(prices, n=14):
     deltas = np.diff(prices)
@@ -93,13 +102,6 @@ def rsiFunc(prices, n=14):
         rs = up/down
         rsi[i] = 100. - 100./(1.+rs)
     return rsi
-
-
-rsi = rsiFunc(closep)
-n = 0
-for i in date:
-    print('Date stamp:', i, 'RSI', rsi[n])
-    n+=1
 
 #TODO
 #Use forloop to parse through RSI, MACD, etc
