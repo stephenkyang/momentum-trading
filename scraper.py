@@ -7,18 +7,32 @@ if __name__ == "__main__":
     data = pd.read_csv("/Users/stephen/Desktop/Momentum Trading Project/ticker-names-on-NASDAQ-NYSE.csv")
     data = data[data["Volume"] > 1000000][data["IPO Year"] < 2010][data["Symbol"] != "AMHC"]["Symbol"]
 
-    period = "1215"
+    period = "10"
     df = None
+    
+    for name in data:
+        col = yf.Ticker(name).history(period=period+"d").loc[: , ["Volume"]]
+        col = col.rename(columns={"Date": "Date", "Volume": name})
+        if df is None:
+            df = col
+        else:
+            df = df.join(col)
+
+
+    #for storing testing data
+    df.to_csv("/Users/stephen/Desktop/Momentum Trading Project/historical-volume-data.csv")
+"""
     for name in data:
         col = yf.Ticker(name).history(period=period+"d").loc[: , ["Close"]]
         col = col.rename(columns={"Date": "Date", "Close": name})
         if df is None:
             df = col
         else:
-            df = df.join(col)
+            df = df.merge(col)
 
     #for storing testing data
     df.to_csv("/Users/stephen/Desktop/Momentum Trading Project/historical-data.csv")
+"""
 
 """
     #normalizing data
