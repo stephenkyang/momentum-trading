@@ -50,8 +50,11 @@ def finding_qualifying_equities(data):
         if data[ticker][1] > data[ticker].iloc[2:50].mean():
             tradable_stocks.append(ticker) 
     return
+
 finding_qualifying_equities(data) 
+
 print(tradable_stocks)   
+
 def bollinger_bands(pair,days = 200):
     combined_z_scores = (data[pair[0]].iloc[-days:-1] + data[pair[1]].iloc[-days:-1]) / 2
     upper_bolli_band = combined_z_scores + combined_z_scores.std() * 2
