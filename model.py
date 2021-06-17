@@ -13,7 +13,7 @@ import yfinance as yf
 data = pd.read_csv("historical-data.csv")
 data.iloc[0] = data.iloc[1]
 data = data.fillna(method='ffill')
-volume = pd.read_csv("historical-volume-data.csv")
+volume_data = pd.read_csv("historical-volume-data.csv")
 
 # Code should do the following:
 #   1. Selection, or what equities you choose
@@ -31,10 +31,8 @@ volume = pd.read_csv("historical-volume-data.csv")
 # 1. Look into MACD(and the trigger line), RSI, Percentage Price Oscillator
 
 # Exit Positions when
-# Stock goes below 5% of the initial buying price (Loss)
-# Stock goes above 1 SD above the bolinger band? (Gain)
+# Stock goes below MACD line 
 # Initial assumptions are wrong (MACD's trigger line is crossed, RSI reverses trend, etc)
-
 
 
 def bollinger_bands(pair,days = 200):
@@ -67,10 +65,10 @@ def RSI(series, period=14):
     return 100 - 100 / (1 + rs)
 
 
-def finding_qualifying_equities(data):
+def finding_qualifying_equities(data, volume_data):
     # if the stock price is higher than its 50-day average
     # RSI of 50 or higher
-    #MACD is 4% higher than the 50-day average
+    # MACD is 4% higher than the 50-day average
     # volume is 4% higher than the previous day
     volume_map = {}
     data.reset_index(drop=True, inplace=True)
@@ -81,16 +79,32 @@ def finding_qualifying_equities(data):
             macd = MACD_signal_line(data, ticker)[1]
             if macd.iloc[-1] >= macd.iloc[-49:-2].mean() * 1.04:
                 ticker_api = yf.Ticker(ticker)
-                ticker_volume = volume
+                ticker_volume = volume_data
                 ticker_volume = ticker_volume.reset_index()
                 if not ticker_volume.empty and ticker_volume[ticker].iloc[-1] >= ticker_volume[ticker].iloc[-2] * 1.04:
                     ticker_open = data[ticker].iloc[-20:-1]
-                    if RSI(ticker_open).iloc[-1] > 50:
+                    try:
+                        ticker_RSI = RSI(ticker_open).iloc[-1]
+                    except IndexError:
+                        continue
+                    if ticker_RSI > 50:
                         volume_map[ticker_volume[ticker].iloc[-1]] = ticker
 
     return volume_map[max(volume_map.keys())]
 
-print(finding_qualifying_equities(data))
+#print(finding_qualifying_equities(data, volume_data))
+#print(MACD_signal_line(data, "CLSD")[2])
+#print(MACD_signal_line(data, "CLSD")[1])
+
+def exit_position(lst):
+    signal_line = lst[2]
+    macd = lst[1]
+    should_exit = False
+    if signal_line.iloc[-1] > macd.iloc[-1]:
+        should_exit = True
+    return should_exit
+
+#print(exit_position(MACD_signal_line(data, "CLSD")))
 
 
 
@@ -104,7 +118,3 @@ def MACD_plot(ticker, macd, exp3):
     lines = ax.get_lines() + ax.right_ax.get_lines()
     ax.legend(lines, [l.get_label() for l in lines], loc='upper left')
     plt.show()
-
-
-#TODO
-#Use forloop to parse through RSI, MACD, etc
