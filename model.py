@@ -87,7 +87,7 @@ def finding_qualifying_equities(data, volume_data):
                         ticker_RSI = RSI(ticker_open).iloc[-1]
                     except IndexError:
                         continue
-                    if ticker_RSI > 50:
+                    if ticker_RSI > 40:
                         volume_map[ticker_volume[ticker].iloc[-1]] = ticker
 
     return volume_map[max(volume_map.keys())]
